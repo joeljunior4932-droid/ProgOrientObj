@@ -1,0 +1,30 @@
+#ifndef TRANSACOES_H
+#define TRANSACOES_H
+#include <string>
+#include <vector>
+class Cliente;
+using namespace std;
+class Transacoes{
+    private:
+        string tipo, data, horario;
+        double valor;
+        vector<Cliente*> clientes;
+        
+    public:
+        Transacoes(string ="", string ="", string = "", double = 0.0);
+        virtual ~Transacoes();
+        string getTipo() const;
+        string getData() const;
+        string getHorario() const;
+        double getValor() const;
+        vector<Cliente*> getClientes() const;
+        void setClientes(Cliente *cliente);
+        void setData(const string& data);
+        void setHorario(const string& horario);
+        void setValor(double valor);
+        void exibirTransacoes()const;
+       
+    
+};
+
+#endif
