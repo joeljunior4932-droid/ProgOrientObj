@@ -2,13 +2,14 @@
 #define TRANSACOES_H
 #include <string>
 #include <vector>
-class Cliente;
 using namespace std;
+class Cliente;
 class Transacoes{
     private:
         string tipo, data, horario;
         double valor;
         vector<Cliente*> clientes;
+        //ponteiro p os clientes envolvidos na transacao 
         
     public:
         Transacoes(string ="", string ="", string = "", double = 0.0);

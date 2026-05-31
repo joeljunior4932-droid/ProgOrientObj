@@ -1,15 +1,12 @@
 #include "Pessoa.h"
-
 #include <iostream>
 
-Pessoa::Pessoa(string login, string senha, string nome, string trabalho): 
-login(login), senha(senha), nome(nome), trabalho(trabalho){}
+Pessoa::Pessoa(string login, string senha, string nome, string trabalho, string dataNasc): 
+login(login), senha(senha), nome(nome), trabalho(trabalho), dataNasc(dataNasc){}
 
 Pessoa::~Pessoa(){}  
 
-//metodos 
-
-
+//metodos
 void Pessoa::exibirDados() const{
     cout << "Login: " << this->login << endl;
     cout << "Nome: " << this->nome << endl;
@@ -17,13 +14,13 @@ void Pessoa::exibirDados() const{
 }
 
 //geterres e seterres essenciais
-
 void Pessoa::setLogin(const string& login){
     this->login = login;
 }
 string Pessoa::getLogin() const{
     return this->login;
 }
+//& referencia a string, com const nao altera a original
 void Pessoa::setSenha(const string& senha){
     this->senha = senha;
 }
