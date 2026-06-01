@@ -30,7 +30,7 @@ void Cliente::setTransacao(Transacoes* transacao){
     //chamamos td vez q uma transacao eh criada cffc
 }
 
-vector<Transacoes*> Cliente::getExtrato() const{
+vector<Transacoes*>& Cliente::getExtrato(){
     return this->transacoes;
 }
 

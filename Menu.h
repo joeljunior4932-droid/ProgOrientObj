@@ -20,7 +20,7 @@ void salvarClientes(vector<Cliente*>& clientes, const string& arquivo);
 void salvarGerentes(vector<Gerente*>& gerentes, const string& arquivo);
 Gerente* cadastrarGerente(vector <Gerente*>& gerente);
 void associaGC(vector<Cliente*>& clientes, vector<Gerente*>& gerentes);
-Transacoes* criarTransacao(Cliente* client1, Cliente* client2 = nullptr);
+Transacoes* transacaoBanco(Cliente* client1, double saldo);
 Cliente* cadastrarCliente(vector<Cliente*>& clientes);
 
 #endif

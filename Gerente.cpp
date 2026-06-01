@@ -9,7 +9,7 @@ Gerente::~Gerente(){
     // portanto apenas limpamos o vetor sem deletar os objetos Cliente
     this->clientes.clear();
 }
-vector<Cliente*> Gerente::getClientes() const{
+vector<Cliente*>& Gerente::getClientes(){
     return this->clientes;
 }
 void Gerente::setClientes(Cliente* x){

@@ -18,7 +18,7 @@ class Transacoes{
         string getData() const;
         string getHorario() const;
         double getValor() const;
-        vector<Cliente*> getClientes() const;
+        vector<Cliente*>& getClientes();
         void setClientes(Cliente *cliente);
         void setData(const string& data);
         void setHorario(const string& horario);

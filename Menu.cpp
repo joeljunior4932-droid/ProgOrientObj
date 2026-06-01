@@ -79,16 +79,20 @@ void carregarClientes(vector<Cliente*>& clientes, const string& arquivo) {
 
         // Le as transacoes registradas para este cliente
         for (int i = 0; i < qtd; i++) {
-            string tipo, data, horario, valorStr, nomeRecebedor;
+            string tipo, data, horario, valorStr, nomeRecebedor, nomeTransferidor;
             getline(ss, tipo,          ',');
             getline(ss, data,          ',');
             getline(ss, horario,       ',');
             getline(ss, valorStr,      ',');
             getline(ss, nomeRecebedor, ',');
+            getline(ss, nomeTransferidor, ',');
 
             double valor = stod(valorStr);
             Transacoes* t = new Transacoes(tipo, data, horario, valor);
-            t->setClientes(c);
+            Cliente *receb = new Cliente(nomeRecebedor);
+            Cliente *transf = new Cliente(nomeTransferidor);
+            t->setClientes(receb);
+            t->setClientes(transf);
             c->setTransacao(t);
         }
         clientes.push_back(c); //add o cliente ao final do vetor 
@@ -114,7 +118,7 @@ void carregarGerentes(vector<Gerente*>& gerentes, const string& arquivo) {
 
         int qtd = stoi(qtdStr);
 
-        Gerente* g = new Gerente(login, senha, nome, dataNasc, trabalho);
+        Gerente* g = new Gerente(login, senha, nome,trabalho, dataNasc);
 
         // Os clientes vinculados sao guardados apenas por referencia no CSV;
         // a vinculacao completa em memoria depende de carregarClientes ter rodado antes.
@@ -124,6 +128,9 @@ void carregarGerentes(vector<Gerente*>& gerentes, const string& arquivo) {
             getline(ss, nomeCli,  ',');
             getline(ss, loginCli, ',');
             getline(ss, tipoConta,',');
+            Cliente *p = new Cliente(nomeCli, loginCli, "", "", "", 0,
+             tipoConta);
+            g->setClientes(p);
         }
 
         gerentes.push_back(g);
@@ -150,13 +157,17 @@ void salvarClientes(vector<Cliente*>& clientes, const string& arquivo) {
         // Uma transacao por vez; cada uma ocupa 5 campos
         for (int i = 0; i < (int)extrato.size(); i++) {
             Transacoes* t = extrato[i];
-            // Nome do recebedor: primeiro cliente diferente do proprio ou o proprio se so houver um
-            string nomeRecebedor = "";
-            if (!t->getClientes().empty())
+            
+            string nomeRecebedor;
+            string nomeTransferidor = "";
+            if (!t->getClientes().empty()){
                 nomeRecebedor = t->getClientes()[0]->nome;
+                if(t->getTipo() == "transferencia")
+                    nomeTransferidor = t->getClientes()[1]->nome;
+            }
 
             arq << t->getTipo() << ',' << t->getData()    << ',' << t->getHorario() << ','
-            << t->getValor()   << ',' << nomeRecebedor   << ',';
+            << t->getValor()   << ',' << nomeRecebedor   << ',' << nomeTransferidor << ',';
         }
         arq << '\n';
     }
@@ -220,34 +231,44 @@ void associaGC(vector<Cliente*>& clientes, vector<Gerente*>& gerentes){
         cout << "Gerente não encontrado" << endl;
         return;
     }
-
-    c->setGerente(nomGer); //cli guarda o nome de ger
-    g->setClientes(c); //ger gaurda o ponteiro p cli
-    cout << "Associação realizada: " << nomCli << "->" << nomGer << endl;
-
+    if(c->getGerente() == ""){
+        c->setGerente(nomGer); //cli guarda o nome de ger
+        g->setClientes(c); //ger gaurda o ponteiro p cli
+        cout << "Associação realizada: " << nomCli << "->" << nomGer << endl;
+    }
+    else{
+        if(c->getGerente() == g->nome){
+            cout << "esse cliente ja esta associado a esse gerente!!" << endl;
+            return;
+        }
+        else{
+            Gerente* antigo = buscarGerentePorNome(gerentes, c->getGerente());
+            for (auto it = antigo->getClientes().begin(); it != antigo->getClientes().end(); ++it) {
+                if ((*it)->nome == c->nome) {
+                    antigo->getClientes().erase(it);        // remove o ponteiro do vetor
+                    break;                     // sai do loop
+                }
+            }
+            c->setGerente(nomGer); //cli guarda o nome de ger
+            g->setClientes(c); //ger gaurda o ponteiro p cli
+            cout << "Associação realizada: " << nomCli << "->" << nomGer << endl;
+        }    
+    }
 }
 
-Transacoes* criarTransacao(Cliente* client1, Cliente* client2 = nullptr){
+Transacoes* transacaoBanco(Cliente* client1, double saldo){
     //nullptr é so usado em transferencias, é um parametro opcional
-    cout << "Inserção de dados da transações: "<< endl;
-    cout << "Tipo: ";
-    string tipo, data, horario;
-    cin >> tipo;
-    transform(tipo.begin(), tipo.end(), tipo.begin(), ::tolower); //garante q maiusc e minusc sejam tradados igualmente 
+    cout << "Inserção de dados do deposito: "<< endl;
+    
+    string data, horario;
     cout << "Data(DD/MM/ANO): ";
     cin >> data;
     cout << "Horário(HH:MM:SS): ";
     cin >> horario;
-    cout << "Valor da transação: ";
-    double valor;
-    cin >> valor;
     
-    Transacoes *t = new Transacoes(tipo, data, horario, valor);
+    Transacoes *t = new Transacoes("deposito", data, horario, saldo);
     //add os clientes envolvidos na transacao 
     t->setClientes(client1);
-    if (client2 != nullptr) {
-        t->setClientes(client2);
-    }
     return t; 
 }
 
@@ -258,7 +279,7 @@ Cliente* cadastrarCliente(vector<Cliente*>& clientes){
     cin.ignore();
     getline(cin, nome);
     if (buscarClientePorNome(clientes, nome)) {
-        cout << "Cliente" << nome << "já está cadastrado!" << endl;
+        cout << "Cliente " << nome << " já está cadastrado!" << endl;
         return nullptr;
     }
     cout << "Digite a data de nascimento(DD:MM:ANO): "; 
@@ -276,7 +297,7 @@ Cliente* cadastrarCliente(vector<Cliente*>& clientes){
     double saldo;
     bool temTransacoes;
     while(1){
-        cout << "Você quer fazer uma transação para o banco: (sim/nao)";
+        cout << "Você quer fazer uma transação para o banco: (sim/nao): ";
         string option;
         cin>>option;
 
@@ -312,10 +333,10 @@ Cliente* cadastrarCliente(vector<Cliente*>& clientes){
     cin >> login;
     cout << "Digite a senha: ";
     cin >> senha;
-    Cliente *x = new Cliente(nome, login, senha, trabalho, data, remuneracao, tipoConta.data(), taxaRendimento, saldo);
+    Cliente *x = new Cliente(nome, login, senha, trabalho, data, remuneracao, tipoConta, taxaRendimento, saldo);
     //cria o obj e add a transacao inicial se tiver
     if(temTransacoes)
-        x->setTransacao(criarTransacao(x));
+        x->setTransacao(transacaoBanco(x, saldo));
 
     return x;  
 }

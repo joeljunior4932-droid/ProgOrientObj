@@ -24,7 +24,7 @@ class Cliente: public Pessoa{
         ~Cliente();
 
         void setTransacao(Transacoes* transacao);
-        vector<Transacoes*> getExtrato() const;
+        vector<Transacoes*>& getExtrato();
         string getTipoDeConta() const;
         void setTipoDeConta(const string& tipo);
         double getRemuneracao() const;

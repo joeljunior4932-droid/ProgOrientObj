@@ -9,7 +9,7 @@ class Gerente: public Pessoa{
     public:
         Gerente(string = "", string ="", string ="", string = "", string ="");
         ~Gerente();
-        vector<Cliente*> getClientes() const;
+        vector<Cliente*>& getClientes();
         void setClientes(Cliente* x);
         void exibirDados() const override;
         

@@ -16,7 +16,7 @@ int main(){
         int opcao;
         cin >> opcao;
         if (opcao < 1 || opcao > 8) {
-            cout << "Opção invalida!Deve ser de 1 a 8. " << endl;
+            cout << "Opção invalida! Deve ser de 1 a 8. " << endl;
             continue;
         }
         switch (opcao)
@@ -33,7 +33,7 @@ int main(){
                 Gerente* g = cadastrarGerente(gerente);
                 if (g){
                     gerente.push_back(g);
-                    cout << "Cliente cadastrado com sucesso!" << endl;
+                    cout << "Gerente cadastrado com sucesso!" << endl;
                 }
                 break;
             }
@@ -43,15 +43,20 @@ int main(){
                 cin >> resp;
                 double valor;
                 if (resp == "deposito") {
-                    cout << "Nome do cliente: ";
+                
+                    cout << "Nome do cliente que está realizando o deposito: ";
+                    
                     cin >> nome; 
+                
                     Cliente* c = buscarClientePorNome(cliente, nome);
+              
                     if (!c) {
                         cout << "Cliente nao encontrado" << endl;
                         break;
                     }
                     cout << "Valor do depósito: ";
                     cin >> valor;
+
                     cout << "Data do depósito: ";
                     cin >> data;
                     cout << "Horario do depósito: ";
@@ -61,9 +66,10 @@ int main(){
                     Transacoes* t = new Transacoes(resp, data, horario, valor);
                     t->setClientes(c);
                     c->setTransacao(t);
-                    cout << "Depósito realizado. Saldo atualizado para: " << c->getSaldo() << endl;
+                    cout << "Depósito realizado. Saldo de " << c->nome << " atualizado para: " << c->getSaldo() << endl;
                 }
                 else if (resp == "saque") {
+         
                     cout << "Nome do cliente: ";
                     cin >> nome; 
                     Cliente* c = buscarClientePorNome(cliente, nome);
@@ -74,7 +80,7 @@ int main(){
                     cout << "Valor do saque: ";
                     cin >> valor;
                     if (valor > c->getSaldo()) {
-                        cout << "Saldo insuficiente. Você tem : "<< c->getSaldo() << endl;
+                        cout << "Saldo insuficiente. O cliente tem : R$ "<< c->getSaldo() << endl;
                         break;
                     }
                     cout << "Data do saque: ";
@@ -109,7 +115,7 @@ int main(){
                     cout << "Valor da transferencia: ";
                     cin >> valor;
                     if (valor > c->getSaldo()) {
-                        cout << "saldo insuficiente. Você tem: " << c->getSaldo() << endl;
+                        cout << "saldo insuficiente. O cliente tem: R$" << c->getSaldo() << endl;
                         break;
                     }
                     cout << "Data da trasnferencia:";
@@ -122,13 +128,15 @@ int main(){
 
                     //registrar transacao em ambos 
                     Transacoes* t1 = new Transacoes(resp, data, horario, valor);
-                    t1->setClientes(c);
                     t1->setClientes(recebedor);
+                    t1->setClientes(c);
+                    
                     c->setTransacao(t1);
 
                     Transacoes* t2 = new Transacoes(resp, data, horario, valor);
-                    t2->setClientes(c);
                     t2->setClientes(recebedor);
+                    t2->setClientes(c);
+                    
                     recebedor->setTransacao(t2);
                     //cria 2 transacoes, 1 pra cada cliente 
 
@@ -158,6 +166,10 @@ int main(){
                             cout << "Data:    " << extrato[i]->getData()    << endl;
                             cout << "Horario: " << extrato[i]->getHorario() << endl;
                             cout << "Valor:   " << extrato[i]->getValor()   << endl;
+                            cout << "Recebedor: " << extrato[i]->getClientes()[0]->nome << endl;
+                            if(extrato[i]->getTipo() == "transferencia")
+                                cout << "Transferidor: " << extrato[i]->getClientes()[1]->nome << endl;
+                            cout << " ---- ---- ---- ---- " << endl;
 
                         }
                     }
@@ -198,19 +210,20 @@ int main(){
                             cout << "Data:  " << extrato[i]->getData()    << endl;
                             cout << "Valor: " << extrato[i]->getValor()   << endl;
                             cout << "Horario: " << extrato[i]->getHorario()   << endl;
-                            if (extrato[i]->getTipo() == "transferencia") {
-                                vector<Cliente*> envolvidos = extrato[i]->getClientes();
+                            vector<Cliente*> envolvidos = extrato[i]->getClientes();
+                            if(extrato[i]->getTipo()== "transferencia"){
+                                
                                 //vetor de qm envia e quem recebe]
                                 //verificamos qual deles é o cliente ATUAL para mostrar o outro 
-                                string outro;
-                                if (envolvidos[0]->nome == c->nome) 
-                                    outro = envolvidos[1]->nome;
-                                else 
-                                    outro = envolvidos[0]->nome;
-
-                                cout << "Recebedor: " << outro << endl;
+                                
+                                cout << "Recebedor: " << envolvidos[0]->nome << endl;
+                                cout << "Transferidor: " << envolvidos[1]->nome << endl;
                                 cout << '\n';
+                            }else{
+                                cout << "Recebedor: " << envolvidos[0]->nome << endl;
                             }
+                            cout << "--------------------" << endl;
+                            
                         }
                     }
                     break;
@@ -225,7 +238,7 @@ int main(){
                 cin >> nome;
                 Gerente* g = buscarGerentePorNome(gerente, nome);
                 if (g) {
-                    cout << "\n===== INFORMAÇÕES DO GERENTE" << nome << " =====" << endl;
+                    cout << "\n===== INFORMAÇÕES DO GERENTE " << nome << " =====" << endl;
                     cout << "Login:    " << g->getLogin() << endl;
                     cout << "Senha:    " << g->getSenha() << endl;
                     cout << "Trabalho: " << g->trabalho  << endl;
@@ -237,6 +250,7 @@ int main(){
                         cout << "Tipo de Conta:    " << lista[i]->getTipoDeConta()<< endl;
                         cout << "Login Cliente:    " << lista[i]->getLogin() << endl;
                     }
+                    cout << "=====  ===== ===== ===== ===== =====" << endl;
                     break;
                 } else {
                     cout << "Gerente não encontrado no banco de dados " << endl;

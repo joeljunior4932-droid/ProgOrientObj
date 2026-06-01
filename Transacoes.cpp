@@ -20,7 +20,7 @@ string Transacoes::getHorario() const{
 double Transacoes::getValor() const{
     return this->valor;
 }
-vector<Cliente*> Transacoes::getClientes() const{
+vector<Cliente*>& Transacoes::getClientes(){
     return this->clientes;
 }
 void Transacoes::setClientes(Cliente *cliente){
