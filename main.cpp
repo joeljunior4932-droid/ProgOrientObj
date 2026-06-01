@@ -1,5 +1,7 @@
 #include "Menu.h"
 #include "Transacoes.h"
+#include <iostream>
+#include <algorithm>
 using namespace std; 
 
 int main(){
@@ -10,11 +12,19 @@ int main(){
     carregarClientes(cliente, "clientes.csv");
     carregarGerentes(gerente, "gerentes.csv");
     //carrega os dados salvos nos arquivos - se n existir, comeca vazio mesmo
-        
+    sort(cliente.begin(), cliente.end());
+    sort(gerente.begin(), gerente.end());
     while (1) {
         printMenu();
         int opcao;
-        cin >> opcao;
+        if (!(cin >> opcao)) {
+            cout << "Voce nao digitou um numero!" << endl;
+
+            cin.clear();              // limpa o estado de erro
+            cin.ignore(1000, '\n');   // descarta a entrada errada
+
+            continue;                 // volta para o início do while
+        }
         if (opcao < 1 || opcao > 8) {
             cout << "Opção invalida! Deve ser de 1 a 8. " << endl;
             continue;

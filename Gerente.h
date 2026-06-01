@@ -10,6 +10,7 @@ class Gerente: public Pessoa{
         Gerente(string = "", string ="", string ="", string = "", string ="");
         ~Gerente();
         vector<Cliente*>& getClientes();
+        bool operator<(const Gerente& x) const;
         void setClientes(Cliente* x);
         void exibirDados() const override;
         

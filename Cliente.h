@@ -34,6 +34,7 @@ class Cliente: public Pessoa{
         void setSaldo(double saldo);
         double getRendimento() const;
         void setRendimento(double rendimento);
+        bool operator<(const Cliente& x) const;
         
 
 };

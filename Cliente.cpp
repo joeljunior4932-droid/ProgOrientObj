@@ -61,6 +61,9 @@ void Cliente::setGerente(const string &x){
 void Cliente::setSaldo(double saldo){
     this->saldo = saldo;
 }
+bool Cliente::operator<(const Cliente& x) const{
+    return this->nome < x.nome;
+}
 
 double Cliente::getRendimento() const{
     return this->taxaDeRendimento;

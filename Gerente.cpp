@@ -9,6 +9,9 @@ Gerente::~Gerente(){
     // portanto apenas limpamos o vetor sem deletar os objetos Cliente
     this->clientes.clear();
 }
+bool Gerente::operator<(const Gerente& x) const{
+    return this->nome < x.nome;
+}
 vector<Cliente*>& Gerente::getClientes(){
     return this->clientes;
 }
