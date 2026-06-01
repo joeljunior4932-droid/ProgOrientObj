@@ -22,5 +22,8 @@ Gerente* cadastrarGerente(vector <Gerente*>& gerente);
 void associaGC(vector<Cliente*>& clientes, vector<Gerente*>& gerentes);
 Transacoes* transacaoBanco(Cliente* client1, double saldo);
 Cliente* cadastrarCliente(vector<Cliente*>& clientes);
+void menuCartao(vector<Cliente*>& clientes, vector<Gerente*>& gerentes);
+void carregarCartoes(vector<Cliente*>& clientes, const string& arquivo);
+void salvarCartoes(vector<Cliente*>& clientes, const string& arquivo);
 
 #endif

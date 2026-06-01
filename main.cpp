@@ -11,6 +11,7 @@ int main(){
 
     carregarClientes(cliente, "clientes.csv");
     carregarGerentes(gerente, "gerentes.csv");
+    carregarCartoes(cliente, "cartoes.csv");
     //carrega os dados salvos nos arquivos - se n existir, comeca vazio mesmo
     sort(cliente.begin(), cliente.end());
     sort(gerente.begin(), gerente.end());
@@ -25,8 +26,8 @@ int main(){
 
             continue;                 // volta para o início do while
         }
-        if (opcao < 1 || opcao > 8) {
-            cout << "Opção invalida! Deve ser de 1 a 8. " << endl;
+        if (opcao < 1 || opcao > 9) {
+            cout << "Opção invalida! Deve ser de 1 a 9. " << endl;
             continue;
         }
         switch (opcao)
@@ -270,13 +271,14 @@ int main(){
             case 8: //salvar dados e sair 
                 while(1){
                     string opt;
-                    cout << "voce quer salvar todos os dados em clientes.csv e em gerente.csv (apenas sim ou nao): ";
+                    cout << "voce quer salvar todos os dados em clientes.csv, em gerente.csv e em cartoes.csv? (apenas sim ou nao): ";
                     cin >> opt;
                     if(opt != "sim" && opt != "nao")
                         cout << "Opção inválida!!" << endl;
                     else if(opt == "sim"){
                         salvarClientes(cliente, "clientes.csv");
                         salvarGerentes(gerente, "gerentes.csv");
+                        salvarCartoes(cliente, "cartoes.csv");
                         cout << "Dados salvos com sucesso" << endl;
                         break;
                     }
@@ -292,6 +294,10 @@ int main(){
                 for (auto g : gerente)
                     delete g; //limp o vetor, nao deleta 
                 return 0;
+                
+            case 9: // novo case referente a atividade do ponto extra
+                menuCartao(cliente, gerente);
+                break;
         } //fecha switch
     } //fecha while
     return 0;

@@ -3,6 +3,9 @@
 #include "Pessoa.h"
 #include <vector>
 #include <string>
+
+class CartaoCredito;
+
 class Transacoes; //avisa q existe pois ambos se referenciam
 //temos q usar ponteiros p compilador aceitar
 class Cliente: public Pessoa{
@@ -14,7 +17,7 @@ class Cliente: public Pessoa{
         double saldo;
         string gerente;
         vector<Transacoes*> transacoes;
-        
+        CartaoCredito* cartao;
         
     public:
         //override sobrescreve o metodo virtual de pessoa 
@@ -35,7 +38,8 @@ class Cliente: public Pessoa{
         double getRendimento() const;
         void setRendimento(double rendimento);
         bool operator<(const Cliente& x) const;
-        
+        CartaoCredito* getCartao() const;
+        void setCartao(CartaoCredito* c);
 
 };
 #endif

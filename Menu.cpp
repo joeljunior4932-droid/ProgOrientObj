@@ -7,6 +7,7 @@
 #include "Transacoes.h"
 #include <fstream>
 #include <sstream>
+#include "CartaoCredito.h"
 using namespace std;
 
 void printMenu(){
@@ -19,6 +20,7 @@ void printMenu(){
     cout << "6. Listar clientes\n";
     cout << "7. Listar gerentes\n";
     cout << "8. Salvar dados e sair\n";
+    cout << "9. Gerenciar Cartões de Crédito\n";
     cout << "==================================================" << endl <<
             "Escolha uma opção: ";
 }
@@ -339,5 +341,212 @@ Cliente* cadastrarCliente(vector<Cliente*>& clientes){
         x->setTransacao(transacaoBanco(x, saldo));
 
     return x;  
+}
+
+void carregarCartoes(vector<Cliente*>& clientes, const string& arquivo) {
+    ifstream arq(arquivo);
+    if (!arq) return;
+
+    string linha;
+    while (getline(arq, linha)) {
+        if (linha.empty()) continue;
+        stringstream ss(linha);
+
+        string nomeCli, numero, limiteStr, utilStr, bloqStr, qtdStr;
+        getline(ss, nomeCli, ',');
+        getline(ss, numero, ',');
+        getline(ss, limiteStr, ',');
+        getline(ss, utilStr, ',');
+        getline(ss, bloqStr, ',');
+        getline(ss, qtdStr, ',');
+
+        Cliente* c = buscarClientePorNome(clientes, nomeCli);
+        if (!c) continue; // Cliente não existe mais
+
+        double limite = stod(limiteStr);
+        double util = stod(utilStr);
+        bool bloqueado = (bloqStr == "1");
+        int qtd = stoi(qtdStr);
+
+        CartaoCredito* cartao = new CartaoCredito(numero, limite, c);
+        cartao->setLimiteUtilizado(util);
+        cartao->setBloqueado(bloqueado);
+
+        for (int i = 0; i < qtd; i++) {
+            string desc, vTotalStr, nParcStr, pPagasStr, dataC;
+            getline(ss, desc, ',');
+            getline(ss, vTotalStr, ',');
+            getline(ss, nParcStr, ',');
+            getline(ss, pPagasStr, ',');
+            getline(ss, dataC, ',');
+
+            CompraCartao* compra = new CompraCartao(desc, stod(vTotalStr), stoi(nParcStr), dataC);
+            compra->setParcelasPagas(stoi(pPagasStr));
+            cartao->getCompras().push_back(compra);
+        }
+        c->setCartao(cartao);
+    }
+}
+
+void salvarCartoes(vector<Cliente*>& clientes, const string& arquivo) {
+    ofstream arq(arquivo);
+    if (!arq) return;
+
+    for (auto c : clientes) {
+        CartaoCredito* cartao = c->getCartao();
+        if (cartao) {
+            vector<CompraCartao*>& compras = cartao->getCompras();
+            arq << c->nome << ',' << cartao->getNumero() << ',' << cartao->getLimite() << ','
+                << cartao->getLimiteUtilizado() << ',' << (cartao->getBloqueado() ? "1" : "0") << ','
+                << compras.size() << ',';
+
+            for (auto cmp : compras) {
+                arq << cmp->getDescricao() << ',' << cmp->getValorTotal() << ','
+                    << cmp->getNumeroParcelas() << ',' << cmp->getParcelasPagas() << ','
+                    << cmp->getDataCompra() << ',';
+            }
+            arq << '\n';
+        }
+    }
+}
+
+void menuCartao(vector<Cliente*>& clientes, vector<Gerente*>& gerentes) {
+    //função para o submenu do cartão de crédito
+    while (true) {
+        cout << "\n--- SUB-MENU: CARTÕES DE CRÉDITO ---" << endl;
+        cout << "1. Criar cartão para um cliente" << endl;
+        cout << "2. Alterar limite do cartão" << endl;
+        cout << "3. Realizar compra parcelada" << endl;
+        cout << "4. Bloquear/Desbloquear cartão" << endl;
+        cout << "5. Visualizar fatura" << endl;
+        cout << "6. Pagar fatura" << endl;
+        cout << "7. Voltar" << endl;
+        cout << "Escolha: ";
+        
+        int opc;
+        if (!(cin >> opc)) { cin.clear(); cin.ignore(1000, '\n'); continue; }
+
+        if (opc == 7) break;
+
+        if (opc == 1) { // Criar o cartão
+            string nGer, nCli;
+            cout << "Nome do Gerente: "; cin >> nGer;
+            cout << "Nome do Cliente: "; cin >> nCli;
+            
+            Gerente* g = buscarGerentePorNome(gerentes, nGer);
+            Cliente* c = buscarClientePorNome(clientes, nCli);
+            
+            if (!g || !c) { 
+                cout << "Gerente ou Cliente não encontrado." << endl; 
+                continue; 
+            }
+
+            if (c->getGerente() != g->nome) { 
+                cout << "Este cliente não pertence a este gerente." << endl; 
+                continue; 
+            }
+
+            if (c->getCartao() != nullptr) { 
+                cout << "Cliente já possui um cartão." << endl;
+                continue; 
+            }
+
+            /*
+            criação do limite inicial do cartão cmo base na remuneração do cliente, sendo que se a remuneração for menor que 2000,00, o limite será de 500,00
+            se a remunareção for maior ou igual a 2000 e menor ou igual a 5000, o limite será de 2000,00, e se a remuneração for maior do que 5000, o limite
+            será de 5000,00.
+            */
+            double rem = c->getRemuneracao();
+            double limite = 0;
+            if (rem < 2000) limite = 500;
+            else if (rem >= 2000 && rem <= 5000) limite = 2000;
+            else limite = 5000;
+
+            string numGerado = "CC-" + to_string(rand() % 10000 + 1000);
+            CartaoCredito* novoCartao = new CartaoCredito(numGerado, limite, c);
+            c->setCartao(novoCartao);
+            
+            cout << "Cartão criado! Número: " << numGerado << " | Limite: R$ " << limite << endl;
+            
+        } else if (opc == 2) { // Alterar Limite
+            string nGer, nCli;
+            cout << "Nome do Gerente: "; cin >> nGer;
+            cout << "Nome do Cliente: "; cin >> nCli;
+            Gerente* g = buscarGerentePorNome(gerentes, nGer);
+            Cliente* c = buscarClientePorNome(clientes, nCli);
+            
+            if (!g || !c || c->getGerente() != g->nome || !c->getCartao()) {
+                cout << "Dados inválidos ou cliente sem cartão/associação." << endl; continue;
+            }
+            
+            cout << "Novo limite (Mínimo R$ 100): ";
+            double novoL; cin >> novoL;
+            if (novoL < 100) { cout << "O limite não pode ser menor que 100." << endl; continue; }
+            
+            c->getCartao()->setLimite(novoL);
+            cout << "Limite alterado com sucesso." << endl;
+
+        } else if (opc == 3) { // Compra
+            string nCli;
+            cout << "Nome do Cliente: "; cin >> nCli;
+            Cliente* c = buscarClientePorNome(clientes, nCli);
+            if (!c || !c->getCartao()) { cout << "Cliente não encontrado ou não possui cartão." << endl; continue; }
+
+            string desc, data;
+            double valor; int parc;
+            cout << "Descrição da compra: "; cin >> desc;
+            cout << "Valor total: "; cin >> valor;
+            cout << "Número de parcelas (1 a 12): "; cin >> parc;
+            cout << "Data (DD/MM/ANO): "; cin >> data;
+
+            c->getCartao()->realizarCompra(desc, valor, parc, data);
+
+        } else if (opc == 4) { // Bloqueio
+            string nCli, perfil;
+            cout << "Nome do Cliente: "; cin >> nCli;
+            cout << "Quem está solicitando (gerente/cliente)? "; cin >> perfil;
+            Cliente* c = buscarClientePorNome(clientes, nCli);
+            if (!c || !c->getCartao()) { cout << "Cliente inválido." << endl; continue; }
+
+            if (perfil == "cliente") {
+                c->getCartao()->setBloqueado(true);
+                cout << "Cartão bloqueado (Desbloqueio apenas com gerente)." << endl;
+            } else if (perfil == "gerente") {
+                int acao;
+                cout << "1 - Bloquear | 2 - Desbloquear: "; cin >> acao;
+                c->getCartao()->setBloqueado(acao == 1);
+                cout << "Ação de bloqueio/desbloqueio concluída." << endl;
+            } else {
+                cout << "Perfil inválido." << endl;
+            }
+
+        } else if (opc == 5) { // Visualizar Fatura
+            string nCli;
+            cout << "Nome do Cliente: "; cin >> nCli;
+            Cliente* c = buscarClientePorNome(clientes, nCli);
+            if (!c || !c->getCartao()) { cout << "Inválido." << endl; continue; }
+            
+            c->getCartao()->exibirFatura();
+
+        } else if (opc == 6) { // Pagar Fatura
+            string nCli, data, horario;
+            double valor;
+            cout << "Nome do Cliente: "; cin >> nCli;
+            Cliente* c = buscarClientePorNome(clientes, nCli);
+            if (!c || !c->getCartao()) { cout << "Inválido." << endl; continue; }
+
+            if (c->getCartao()->getLimiteUtilizado() <= 0) {
+                cout << "Não há valores a serem pagos na fatura no momento." << endl;
+                continue; // Retorna ao sub-menu sem pedir os dados de pagamento
+            }
+
+            cout << "Sua fatura atual é R$ " << c->getCartao()->getLimiteUtilizado() << endl;
+            cout << "Valor a pagar: "; cin >> valor;
+            cout << "Data: "; cin >> data;
+            cout << "Horário: "; cin >> horario;
+
+            c->getCartao()->pagarFatura(valor, data, horario);
+        }
+    }
 }
 

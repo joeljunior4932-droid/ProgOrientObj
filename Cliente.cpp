@@ -14,13 +14,16 @@ void Cliente::exibirDados() const{
 Cliente::Cliente(string nome, string login, string senha, string trabalho, string dataNasc, double remuneracao,
              string tipoDeConta, double taxaDeRendimento , double saldo): 
              Pessoa( login, senha, nome, trabalho, dataNasc), remuneracao(remuneracao), tipoDeConta(tipoDeConta), 
-             taxaDeRendimento(taxaDeRendimento), saldo(saldo), gerente(), transacoes(0){}
+             taxaDeRendimento(taxaDeRendimento), saldo(saldo), gerente(), transacoes(0), cartao(nullptr) {}
 
 Cliente::~Cliente(){
     for (int i = 0; i < (int)this->transacoes.size(); i++) {
         delete this->transacoes[i];
         //cliente recebeu as transacoes e é resp por deletar qdo 'morrer'
         //em transacoes, fazemos o clear - so esquece o ponteiro, n o deleta, so aponta p ele nao criou ele 
+    }
+    if(this->cartao != nullptr){
+        delete this->cartao;
     }
 }
 
@@ -71,4 +74,12 @@ double Cliente::getRendimento() const{
 
 void Cliente::setRendimento(double rendimento){
     this->taxaDeRendimento = rendimento;
+}
+
+CartaoCredito* Cliente::getCartao() const {
+    return this->cartao;
+}
+
+void Cliente::setCartao(CartaoCredito* c) {
+    this->cartao = c;
 }
