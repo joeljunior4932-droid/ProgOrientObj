@@ -4,12 +4,13 @@
 #include <vector>
 class Cliente;
 class Gerente: public Pessoa{
-    vector<Cliente *> clientes;
-
+    vector<Cliente *> clientes; //lista de clientes que gerencia 
+    
     public:
-        Gerente(string = "", string ="", string ="", string ="");
+        Gerente(string = "", string ="", string ="", string = "", string ="");
         ~Gerente();
-        vector<Cliente*> getClientes() const;
+        vector<Cliente*>& getClientes();
+        bool operator<(const Gerente& x) const;
         void setClientes(Cliente* x);
         void exibirDados() const override;
         
